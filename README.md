@@ -64,8 +64,38 @@ FRAUD DETECTION/
    ```bash
    python run.py
    ```
-   This will start the backend server and serve the frontend interface.
+``
+                ┌──────────────────┐
+                │  Upload PAN Card │
+                └────────┬─────────┘
+                         │
+                         ▼
+              ┌────────────────────┐
+              │ Image Preprocessing │
+              └────────┬───────────┘
+                       │
+                       ▼
+          ┌──────────────────────────┐
+          │ Document Detection & OCR │
+          └────────┬─────────────────┘
+                   │
+                   ▼
+      ┌──────────────────────────────┐
+      │ Tampering & Feature Analysis │
+      └────────┬─────────────────────┘
+               │
+               ▼
+        ┌────────────────────┐
+        │ Fraud Decision AI  │
+        └────────┬───────────┘
+                 │
+                 ▼
+        ┌────────────────────┐
+        │ Genuine / Fraudulent │ ```
+        └────────────────────┘
 
+
+        
 ## 🖥️ Usage
 1. Open your browser and navigate to the application URL (provided in the terminal after running `run.py`).
 2. Upload a clear image of a PAN card.

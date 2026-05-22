@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI PAN Card Fraud Detection & Verification System</title>
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="background-glow">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <i class="fa-solid fa-shield-halved app-logo-icon"></i>
+                <div class="logo-text">
+                    <h1>Antigravity PAN-Verify</h1>
+                    <p>Computer Vision Forgery & Tampering Detection Engine</p>
+                </div>
+            </div>
+            <div class="server-status" id="serverStatus">
+                <span class="status-dot pulsing"></span>
+                <span class="status-text">Connecting to Backend API...</span>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="workspace-grid">
+            <!-- Left Panel: Actions & Inputs -->
+            <section class="control-panel glass-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-file-arrow-up"></i> Upload Document</h2>
+                    <p>Upload a PAN card image (JPG, PNG, WebP) to analyze tampering threat levels.</p>
+                </div>
+
+                <!-- Drag & Drop Uploader -->
+                <div class="upload-dropzone" id="dropzone">
+                    <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                    <div class="dropzone-content">
+                        <i class="fa-solid fa-cloud-arrow-up cloud-icon"></i>
+                        <h3>Drag & Drop PAN Card</h3>
+                        <p>or <span class="browse-btn">browse files</span></p>
+                        <span class="file-limits">Supports high-res PNG, JPG, JPEG, WebP</span>
+                    </div>
+                </div>
+
+                <!-- Preview Selected File -->
+                <div class="upload-preview-container hidden" id="previewContainer">
+                    <div class="preview-card">
+                        <img id="uploadPreview" src="" alt="PAN Card Upload Preview">
+                        <div class="preview-overlay">
+                            <span class="filename" id="uploadFilename">pancard.jpg</span>
+                            <button class="remove-btn" id="removeUploadBtn" title="Remove image">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary btn-full-width" id="verifyBtn">
+                        <span class="btn-text">Execute Verification Pipeline</span>
+                        <i class="fa-solid fa-bolt btn-icon"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Right Panel: Summary Dashboard -->
+            <section class="summary-panel glass-panel" id="summaryPanel">
+                <!-- Idle State Message -->
+                <div class="idle-state" id="idleState">
+                    <i class="fa-solid fa-microscope idle-icon"></i>
+                    <h3>Verification Pipeline Idle</h3>
+                    <p>Load and run a document to populate real-time computer vision metrics, tampering heatmaps, and OCR decoders.</p>
+                </div>
+
+                <!-- Processing Spinner -->
+                <div class="processing-state hidden" id="processingState">
+                    <div class="spinner-container">
+                        <div class="cyber-spinner"></div>
+                        <i class="fa-solid fa-shield-halved spinner-logo"></i>
+                    </div>
+                    <h3>Orchestrating 9-Phase CV Engine</h3>
+                    <p id="pipelineStageText">Initialising image filters...</p>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" id="progressBarFill"></div>
+                    </div>
+                </div>
+
+                <!-- Results Output Grid -->
+                <div class="results-dashboard hidden" id="resultsDashboard">
+                    <div class="results-layout-header">
+                        <h2>Verification Results</h2>
+                        <span class="badge" id="decisionBadge">LIKELY GENUINE</span>
+                    </div>
+
+                    <!-- Fraud Gauge / Summary row -->
+                    <div class="summary-top-row">
+                        <!-- Custom Gradient Gauge -->
+                        <div class="gauge-container">
+                            <div class="gauge-chart">
+                                <svg class="gauge-svg" viewBox="0 0 100 100">
+                                    <circle class="gauge-bg" cx="50" cy="50" r="40" />
+                                    <circle class="gauge-fill" id="gaugeFillCircle" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="251.2" />
+                                </svg>
+                                <div class="gauge-label-content">
+                                    <span class="gauge-num" id="gaugeNumber">0%</span>
+                                    <span class="gauge-caption">Fraud Risk</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Decisive reasoning box -->
+                        <div class="reasoning-box">
+                            <h4>Threat Engine Assessment:</h4>
+                            <p id="decisionReasoningText">Analyzing...</p>
+                        </div>
+                    </div>
+
+                    <!-- Interactive scorecard metrics -->
+                    <div class="scorecard-area">
+                        <h3>Risk Allocation Scorecard</h3>
+                        <div class="scorecard-grid" id="scorecardGrid">
+                            <!-- Populated dynamically via app.js -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Wide Section: Pipeline Visual Stepper Explorer -->
+        <section class="explorer-section glass-panel hidden" id="explorerSection">
+            <div class="panel-header">
+                <h2><i class="fa-solid fa-diagram-project"></i> Traceable Stage-Wise Explorer</h2>
+                <p>Verify individual stages, inspect computer vision transformations, and trace decisions back to their pipeline origins.</p>
+            </div>
+
+            <!-- Stepper Nodes -->
+            <div class="stepper-nav" id="stepperNav">
+                <button class="step-node active" data-step="preprocessing">
+                    <span class="step-num">1</span>
+                    <span class="step-lbl">Filters</span>
+                </button>
+                <button class="step-node" data-step="detection">
+                    <span class="step-num">2</span>
+                    <span class="step-lbl">Detection</span>
+                </button>
+                <button class="step-node" data-step="correction">
+                    <span class="step-num">3</span>
+                    <span class="step-lbl">Perspective</span>
+                </button>
+                <button class="step-node" data-step="matching">
+                    <span class="step-num">4</span>
+                    <span class="step-lbl">ORB Match</span>
+                </button>
+                <button class="step-node" data-step="tampering">
+                    <span class="step-num">5</span>
+                    <span class="step-lbl">Forgery</span>
+                </button>
+                <button class="step-node" data-step="ocr">
+                    <span class="step-num">6</span>
+                    <span class="step-lbl">OCR & Validations</span>
+                </button>
+            </div>
+
+            <!-- Step Display Display Cards -->
+            <div class="step-viewer-body">
+                <!-- Step 1: Preprocessing Viewer -->
+                <div class="step-content-pane active" id="stepPane-preprocessing">
+                    <div class="pane-split-layout">
+                        <div class="pane-text-col">
+                            <h3>Phase 1: Multi-Spectral Image Preprocessing</h3>
+                            <p>Enhances contrast and eliminates photographic, compression, and printing noise to prime inputs for downstream edge, keypoint, and OCR models.</p>
+                            
+                            <div class="metric-readouts" id="preprocessingMetrics">
+                                <!-- Dynamic metrics list -->
+                            </div>
+
+                            <div class="interactive-selectors">
+                                <h4>Inspect Filter Stages:</h4>
+                                <div class="filter-toggles" id="filterTogglesContainer">
+                                    <!-- Filter tabs -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pane-visual-col">
+                            <div class="visual-card">
+                                <img id="preprocessingViewerImage" src="" alt="Preprocessed Step output">
+                                <div class="visual-tag" id="preprocessingViewerTag">Grayscale Conversion</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Document Detection Viewer -->
+                <div class="step-content-pane" id="stepPane-detection">
+                    <div class="pane-split-layout">
+                        <div class="pane-text-col">
+                            <h3>Phase 2: Document Boundary Detection</h3>
+                            <p>Locates rectangular borders of the physical PAN card using a <strong>Contour-Based Detection Pipeline</strong>: Gaussian Blur &rarr; Histogram Equalization &rarr; Canny Edge Detection &rarr; Morphological Closing &rarr; Contour Detection &rarr; ApproxPolyDP &rarr; Aspect-Ratio Filtering (1.3&ndash;2.1). PAN card physical ratio &asymp; 1.585.</p>
+                            
+                            <div class="readout-box">
+                                <div class="readout-item">
+                                    <span class="lbl">Detection Method:</span>
+                                    <span class="val" id="detMethodUsed">-</span>
+                                </div>
+                                <div class="readout-item">
+                                    <span class="lbl">Aspect Ratio Risk:</span>
+                                    <span class="val" id="detRiskVal">-</span>
+                                </div>
+                            </div>
+                            <div class="info-alert info-alert-doc-det">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span id="detExplanationText">-</span>
+                            </div>
+                        </div>
+                        <div class="pane-visual-col">
+                            <div class="visual-card">
+                                <img id="detectionViewerImage" src="" alt="Detected Corners Overlay">
+                                <div class="visual-tag">Contour Polygon &amp; Card Corners</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Perspective Correction Viewer -->
+                <div class="step-content-pane" id="stepPane-correction">
+                    <div class="pane-split-layout">
+                        <div class="pane-text-col">
+                            <h3>Phase 3: Perspective & Deskew Correction</h3>
+                            <p>Applies homography transformations to calculate top-down deskew angles. Maps tilted vertices to a standardized, flat coordinate matrix representing standard physical card scales.</p>
+                            
+                            <div class="readout-box">
+                                <div class="readout-item">
+                                    <span class="lbl">Normalized Dimension:</span>
+                                    <span class="val">856px x 540px</span>
+                                </div>
+                                <div class="readout-item">
+                                    <span class="lbl">Physical Ratio:</span>
+                                    <span class="val">1.58 (Standard)</span>
+                                </div>
+                            </div>
+                            <div class="info-alert">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span id="correctionExplanationText">Skew angles calculated using RANSAC mapping. Perspective correction warp applied.</span>
+                            </div>
+                        </div>
+                        <div class="pane-visual-col">
+                            <div class="visual-card">
+                                <img id="correctionViewerImage" src="" alt="Deskewed Top Down Card">
+                                <div class="visual-tag">Standard Aligned Deskewed Canvas</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: ORB Matching Viewer -->
+                <div class="step-content-pane" id="stepPane-matching">
+                    <div class="pane-split-layout">
+                        <div class="pane-text-col">
+                            <h3>Phase 4 & 5: Feature Extraction & Template Matching</h3>
+                            <p>Matches key visual anchor sites (government logos, structural printing lines, and layouts) against standard official templates using <strong>ORB descriptors</strong> and Brute-Force matching.</p>
+                            
+                            <div class="readout-box">
+                                <div class="readout-item">
+                                    <span class="lbl">ORB Inliers:</span>
+                                    <span class="val" id="orbMatchesVal">0</span>
+                                </div>
+                                <div class="readout-item">
+                                    <span class="lbl">Spatial Coherence:</span>
+                                    <span class="val" id="orbCoherenceVal">0%</span>
+                                </div>
+                            </div>
+                            <div class="info-alert" id="orbAlertContainer">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span id="matchingExplanationText">Matching...</span>
+                            </div>
+                        </div>
+                        <div class="pane-visual-col">
+                            <div class="visual-card wide-visual-card">
+                                <img id="matchingViewerImage" src="" alt="ORB Keypoints Template Matches">
+                                <div class="visual-tag">Template Layout Keypoints Structural Match (Top 50 RANSAC Inliers)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 5: Forgery Heatmap Viewer -->
+                <div class="step-content-pane" id="stepPane-tampering">
+                    <div class="pane-split-layout">
+                        <div class="pane-text-col">
+                            <h3>Phase 6: Forgery & Digital Tampering Detection</h3>
+                            <p>Inspects pixel variance patterns and high-frequency edge densities to locate visual tampering footprints. Identifies duplicated numbers or logos using copy-move keypoint clusters.</p>
+                            
+                            <div class="readout-box">
+                                <div class="readout-item">
+                                    <span class="lbl">Duplicate Clusters:</span>
+                                    <span class="val" id="tamperCopyMoveVal">0</span>
+                                </div>
+                                <div class="readout-item">
+                                    <span class="lbl">Texture Anomaly:</span>
+                                    <span class="val" id="tamperTextureVal">0%</span>
+                                </div>
+                            </div>
+                            <div class="info-alert" id="tamperAlertContainer">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                <span id="tamperingExplanationText">Scanning...</span>
+                            </div>
+                        </div>
+                        <div class="pane-visual-col">
+                            <div class="visual-card">
+                                <img id="tamperingViewerImage" src="" alt="Forgery Hotspot Heatmap">
+                                <div class="visual-tag">Jet Colormap Variance Heatmap & Copy-Move Traces</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 6: OCR & Validations Viewer -->
+                <div class="step-content-pane" id="stepPane-ocr">
+                    <div class="pane-split-layout big-ocr-pane">
+                        <div class="pane-half-width">
+                            <h3>Phase 7: Region-Specific OCR Parsing</h3>
+                            <p>Runs targeted optical character recognition crops directly over standardized spatial cells containing demographic details.</p>
+                            
+                            <div class="ocr-cards-container" id="ocrFieldsContainer">
+                                <!-- Dynamic OCR cards -->
+                            </div>
+                        </div>
+                        
+                        <div class="pane-half-width left-border-split">
+                            <h3>Phase 8: Rule-Based PAN Format Validation</h3>
+                            <p>Validates OCR-extracted fields from the <strong>same uploaded card only</strong> against Income Tax Department rules. No template identity data is used. Checks: PAN regex, holder type (4th char), surname initial (5th char vs OCR name), digit sequence (chars 6&ndash;9), series character (10th char), and DOB format.</p>
+                            
+                            <div class="validation-rules-list" id="validationRulesList">
+                                <!-- Dynamic rules checks -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer copyright -->
+    <footer class="app-footer">
+        <p>&copy; 2026 Antigravity IDE. Crafted for Advanced Agentic Verification.</p>
+    </footer>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

@@ -64,8 +64,67 @@ FRAUD DETECTION/
    ```bash
    python run.py
    ```
-   This will start the backend server and serve the frontend interface.
+# 🏗️ System Architecture
 
+```text
+                        ┌───────────────────────┐
+                        │   User Uploads PAN    │
+                        │      Card Image       │
+                        └──────────┬────────────┘
+                                   │
+                                   ▼
+                    ┌──────────────────────────┐
+                    │   Image Preprocessing    │
+                    │ • Noise Reduction        │
+                    │ • Contrast Enhancement   │
+                    │ • Image Sharpening       │
+                    └──────────┬───────────────┘
+                               │
+                               ▼
+                 ┌──────────────────────────────┐
+                 │ Document Detection & Cropping │
+                 │ • Edge Detection              │
+                 │ • Boundary Identification     │
+                 │ • Perspective Correction      │
+                 └──────────┬───────────────────┘
+                            │
+        ┌───────────────────┼────────────────────┐
+        │                   │                    │
+        ▼                   ▼                    ▼
+
+┌────────────────┐  ┌──────────────────┐  ┌───────────────────┐
+│ OCR Extraction │  │ Feature Matching │  │ Tampering Analysis │
+│ • PAN Number   │  │ • Template Match │  │ • Edited Regions   │
+│ • Name         │  │ • Layout Check   │  │ • Texture Analysis │
+│ • DOB          │  │ • Keypoint Match │  │ • Clone Detection  │
+└──────┬─────────┘  └────────┬─────────┘  └─────────┬─────────┘
+       │                     │                      │
+       └─────────────────────┼──────────────────────┘
+                             │
+                             ▼
+                 ┌─────────────────────────┐
+                 │   Validation Engine     │
+                 │ • PAN Regex Validation  │
+                 │ • OCR Confidence Check  │
+                 │ • Data Consistency      │
+                 └──────────┬──────────────┘
+                            │
+                            ▼
+                 ┌─────────────────────────┐
+                 │   Fraud Decision Engine │
+                 │ • Score Aggregation     │
+                 │ • Risk Analysis         │
+                 │ • Final Classification  │
+                 └──────────┬──────────────┘
+                            │
+                            ▼
+              ┌──────────────────────────────┐
+              │  Final Verification Result   │
+              │  ✅ Genuine                  │
+              │  ❌ Tampered/Fraudulent      │
+              └──────────────────────────────┘
+```
+        
 ## 🖥️ Usage
 1. Open your browser and navigate to the application URL (provided in the terminal after running `run.py`).
 2. Upload a clear image of a PAN card.

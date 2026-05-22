@@ -329,16 +329,31 @@
                     <div class="pane-split-layout big-ocr-pane">
                         <div class="pane-half-width">
                             <h3>Phase 7: Region-Specific OCR Parsing</h3>
-                            <p>Runs targeted optical character recognition crops directly over standardized spatial cells containing demographic details.</p>
+                            <p>Runs targeted optical character recognition crops directly over standardized spatial cells containing demographic details. Each ROI is individually preprocessed (2.5&times; upscale &rarr; adaptive threshold &rarr; unsharp sharpen &rarr; denoise).</p>
                             
+                            <!-- OCR confidence summary banner -->
+                            <div class="ocr-conf-summary" id="ocrConfSummary"></div>
+
                             <div class="ocr-cards-container" id="ocrFieldsContainer">
                                 <!-- Dynamic OCR cards -->
+                            </div>
+
+                            <!-- Debug ROI Visualiser -->
+                            <div class="debug-rois-section">
+                                <h4><i class="fa-solid fa-bug"></i> Debug: ROI Crops &amp; Preprocessed Inputs</h4>
+                                <p class="debug-rois-subtitle">Raw region crop (left) vs. preprocessed OCR input (right) for each field.</p>
+                                <div class="debug-rois-grid" id="debugRoisContainer">
+                                    <!-- Populated dynamically -->
+                                </div>
                             </div>
                         </div>
                         
                         <div class="pane-half-width left-border-split">
                             <h3>Phase 8: Rule-Based PAN Format Validation</h3>
-                            <p>Validates OCR-extracted fields from the <strong>same uploaded card only</strong> against Income Tax Department rules. No template identity data is used. Checks: PAN regex, holder type (4th char), surname initial (5th char vs OCR name), digit sequence (chars 6&ndash;9), series character (10th char), and DOB format.</p>
+                            <p>Validates OCR-extracted fields from the <strong>same uploaded card only</strong> against Income Tax Department rules. Low-confidence OCR results trigger <em>OCR Uncertainty</em> warnings rather than hard failures to avoid false fraud signals.</p>
+                            
+                            <!-- Validation summary badge row -->
+                            <div class="validation-summary-row" id="validationSummary"></div>
                             
                             <div class="validation-rules-list" id="validationRulesList">
                                 <!-- Dynamic rules checks -->

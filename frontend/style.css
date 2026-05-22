@@ -1183,3 +1183,288 @@ body {
     border-top: 1px solid rgba(255, 255, 255, 0.03);
     margin-top: 3rem;
 }
+
+/* ============================================================
+   NEW: OCR Confidence + Validation UI Improvements
+   ============================================================ */
+
+/* OCR card left column (text) */
+.ocr-card-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+/* Confidence mini-bar on OCR cards */
+.ocr-conf-bar-wrap {
+    width: 64px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 4px;
+}
+
+.ocr-conf-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.6s ease;
+}
+
+/* Low-confidence badge on OCR card */
+.ocr-low-conf-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-top: 0.2rem;
+}
+
+/* OCR Confidence summary banner */
+.ocr-conf-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 0.9rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    line-height: 1.4;
+    margin-bottom: 0.2rem;
+}
+
+.ocr-conf-summary.ok-conf {
+    background: rgba(16, 185, 129, 0.07);
+    border: 1px solid rgba(16, 185, 129, 0.18);
+    color: #10b981;
+}
+
+.ocr-conf-summary.low-conf {
+    background: rgba(245, 158, 11, 0.07);
+    border: 1px solid rgba(245, 158, 11, 0.22);
+    color: #f59e0b;
+}
+
+/* ---- Debug ROI Section ---- */
+.debug-rois-section {
+    margin-top: 1.2rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.debug-rois-section h4 {
+    font-family: var(--font-heading);
+    font-size: 0.88rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.debug-rois-section h4 i {
+    color: var(--primary);
+    font-size: 0.8rem;
+}
+
+.debug-rois-subtitle {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 0.8rem;
+}
+
+.debug-rois-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.debug-roi-block {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 0.6rem 0.8rem;
+}
+
+.debug-roi-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.debug-roi-images {
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.debug-img-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    flex: 1;
+    min-width: 80px;
+}
+
+.debug-img-tag {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.debug-img-wrap img {
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    image-rendering: pixelated;  /* Preserve OCR preprocessing crispness */
+    background: #000;
+}
+
+/* ---- Validation Summary Badge Row ---- */
+.validation-summary-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.val-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.val-badge-ok {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.val-badge-warn {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.val-badge-fail {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* ---- LOW_CONF_WARNING Rule Item ---- */
+.rule-low-conf {
+    background: rgba(245, 158, 11, 0.03) !important;
+    border-color: rgba(245, 158, 11, 0.12) !important;
+}
+
+.rule-low-conf .rule-status-icon {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+}
+
+/* ---- Rule Header Row (check name + status pill inline) ---- */
+.rule-header-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.rule-header-row h4 {
+    margin: 0;
+}
+
+/* ---- Status Pills (inline with check title) ---- */
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.12rem 0.45rem;
+    border-radius: 4px;
+    font-size: 0.6rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    white-space: nowrap;
+}
+
+.pill-pass {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.22);
+}
+
+.pill-fail {
+    background: rgba(239, 68, 68, 0.12);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.22);
+}
+
+.pill-warn {
+    background: rgba(245, 158, 11, 0.12);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.22);
+}
+
+.pill-lowconf {
+    background: rgba(245, 158, 11, 0.08);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    animation: lowconf-pulse 2s ease-in-out infinite;
+}
+
+@keyframes lowconf-pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.65; }
+}
+
+/* Accent teal variable for confidence display */
+:root {
+    --accent-teal: #06B6D4;
+}
+
+/* ---- OCR Auto-Corrected badge (purple — PAN post-correction applied) ---- */
+.ocr-corrected-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: rgba(167, 139, 250, 0.1);
+    color: #a78bfa;
+    border: 1px solid rgba(167, 139, 250, 0.28);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-top: 0.2rem;
+}
+
+/* Validation summary badge — corrected state */
+.val-badge-corrected {
+    background: rgba(167, 139, 250, 0.1);
+    color: #a78bfa;
+    border: 1px solid rgba(167, 139, 250, 0.25);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+

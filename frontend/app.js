@@ -364,25 +364,108 @@ document.addEventListener("DOMContentLoaded", () => {
             const card = document.createElement("div");
             card.className = "ocr-card";
             
-            const isMock = item.is_mock ? `<span class="ocr-mock-tag">Mock Mode</span>` : "";
+            const confVal = Math.round(item.confidence);
+            const isMock = item.is_mock ? `<span class="ocr-mock-tag">MOCK MODE</span>` : "";
+            const isLowConf = item.low_confidence;
+            const isCorrected = item.ocr_corrected;
+            const confColor = confVal >= 85 ? "var(--accent-teal)" : confVal >= 60 ? "#f59e0b" : "#ef4444";
+            const lowConfBadge = isLowConf 
+                ? `<span class="ocr-low-conf-badge"><i class="fa-solid fa-triangle-exclamation"></i> Low Confidence</span>` 
+                : "";
+            const correctedBadge = isCorrected
+                ? `<span class="ocr-corrected-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Corrected</span>`
+                : "";
             
             card.innerHTML = `
-                <div>
-                    <span class="ocr-field-lbl">${field}</span>
-                    <h4 class="ocr-field-val">${item.text || "Empty / Unparsed"}</h4>
+                <div class="ocr-card-left">
+                    <span class="ocr-field-lbl">${field.toUpperCase()}</span>
+                    <h4 class="ocr-field-val">${item.text || "<em style='opacity:0.45'>Empty / Unparsed</em>"}</h4>
+                    ${lowConfBadge}${correctedBadge}
                 </div>
                 <div class="ocr-meta">
-                    <span class="ocr-conf">${Math.round(item.confidence)}% Conf</span>
+                    <span class="ocr-conf" style="color:${confColor}">${confVal}% Conf</span>
                     ${isMock}
+                    <div class="ocr-conf-bar-wrap">
+                        <div class="ocr-conf-bar-fill" style="width:${confVal}%;background:${confColor}"></div>
+                    </div>
                 </div>
             `;
             ocrFieldsContainer.appendChild(card);
         });
+
+        // --- OCR overall confidence summary ---
+        const ocrSummaryEl = document.getElementById("ocrConfSummary");
+        if (ocrSummaryEl) {
+            const overallConf = Math.round(ocr.overall_confidence || 0);
+            const anyLowConf = Object.values(ocr.fields).some(f => f.low_confidence);
+            ocrSummaryEl.innerHTML = `
+                <i class="fa-solid ${anyLowConf ? 'fa-triangle-exclamation' : 'fa-circle-check'}"></i>
+                Overall OCR Confidence: <strong>${overallConf}%</strong>
+                ${anyLowConf ? '— ⚠ One or more fields have low confidence. Validation results may be unreliable.' : '— All fields extracted with good confidence.'}
+            `;
+            ocrSummaryEl.className = `ocr-conf-summary ${anyLowConf ? 'low-conf' : 'ok-conf'}`;
+        }
+
+        // --- Debug ROI Visualiser ---
+        const debugRoisContainer = document.getElementById("debugRoisContainer");
+        if (debugRoisContainer && ocr.debug_rois) {
+            debugRoisContainer.innerHTML = "";
+            Object.entries(ocr.debug_rois).forEach(([field, imgs]) => {
+                if (!imgs.roi_base64 && !imgs.preprocessed_base64) return;
+                const block = document.createElement("div");
+                block.className = "debug-roi-block";
+
+                // Build all stage images: raw + named pipeline stages
+                const stagesHtml = [];
+                if (imgs.roi_base64) {
+                    stagesHtml.push(`
+                        <div class="debug-img-wrap">
+                            <span class="debug-img-tag">Raw ROI Crop</span>
+                            <img src="${imgs.roi_base64}" alt="${field} ROI">
+                        </div>`);
+                }
+                // Named preprocessing stages from the pipeline
+                const stageOrder = ['grayscale', 'resized', 'clahe', 'threshold', 'final_ocr_input'];
+                if (imgs.stages) {
+                    stageOrder.forEach(stageName => {
+                        if (imgs.stages[stageName]) {
+                            const label = stageName.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                            stagesHtml.push(`
+                                <div class="debug-img-wrap">
+                                    <span class="debug-img-tag">${label}</span>
+                                    <img src="${imgs.stages[stageName]}" alt="${field} ${stageName}">
+                                </div>`);
+                        }
+                    });
+                }
+
+                block.innerHTML = `
+                    <div class="debug-roi-label">${field.toUpperCase()}</div>
+                    <div class="debug-roi-images">${stagesHtml.join('')}</div>
+                `;
+                debugRoisContainer.appendChild(block);
+            });
+        }
         
         // Populate Validation Checks list
         const validationRulesList = document.getElementById("validationRulesList");
         validationRulesList.innerHTML = "";
         
+        // Validation summary badges
+        const valSummaryEl = document.getElementById("validationSummary");
+        if (valSummaryEl) {
+            const hardFails = val.hard_failure_count || 0;
+            const lcWarns  = val.low_conf_warning_count || 0;
+            const panFixed = val.pan_ocr_corrected || false;
+            valSummaryEl.innerHTML = `
+                ${hardFails > 0 ? `<span class="val-badge val-badge-fail">${hardFails} Hard Failure${hardFails > 1 ? 's' : ''}</span>` : ''}
+                ${lcWarns  > 0 ? `<span class="val-badge val-badge-warn">${lcWarns} OCR Uncertainty${lcWarns > 1 ? 's' : ''}</span>` : ''}
+                ${panFixed      ? `<span class="val-badge val-badge-corrected"><i class="fa-solid fa-wand-magic-sparkles"></i> PAN Auto-Corrected</span>` : ''}
+                ${hardFails === 0 && lcWarns === 0 && !panFixed ? `<span class="val-badge val-badge-ok">All Checks Passed</span>` : ''}
+                ${hardFails === 0 && lcWarns === 0 && panFixed  ? `<span class="val-badge val-badge-ok">Passed (after correction)</span>` : ''}
+            `;
+        }
+
         val.checks.forEach(check => {
             const item = document.createElement("div");
             
@@ -392,10 +475,21 @@ document.addEventListener("DOMContentLoaded", () => {
             if (check.status === "FAIL") {
                 itemClass = "rule-fail";
                 iconClass = "fa-xmark";
+            } else if (check.status === "LOW_CONF_WARNING") {
+                itemClass = "rule-low-conf";
+                iconClass = "fa-eye-low-vision";
             } else if (check.status === "WARNING") {
                 itemClass = "rule-warning";
                 iconClass = "fa-triangle-exclamation";
             }
+
+            const statusLabel = check.status === "LOW_CONF_WARNING"
+                ? "<span class='status-pill pill-lowconf'>OCR UNCERTAIN</span>"
+                : check.status === "FAIL"
+                ? "<span class='status-pill pill-fail'>FAIL</span>"
+                : check.status === "WARNING"
+                ? "<span class='status-pill pill-warn'>WARNING</span>"
+                : "<span class='status-pill pill-pass'>PASS</span>";
             
             item.className = `rule-check-item ${itemClass}`;
             item.innerHTML = `
@@ -403,7 +497,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     <i class="fa-solid ${iconClass}"></i>
                 </div>
                 <div class="rule-content">
-                    <h4>${check.check}</h4>
+                    <div class="rule-header-row">
+                        <h4>${check.check}</h4>
+                        ${statusLabel}
+                    </div>
                     <p>${check.message}</p>
                 </div>
             `;

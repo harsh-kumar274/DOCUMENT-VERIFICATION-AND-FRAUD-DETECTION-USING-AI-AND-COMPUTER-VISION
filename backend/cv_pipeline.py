@@ -1,6 +1,7 @@
 import cv2
 import traceback
 from backend.config import logger
+from backend.utils import resize_image, base64_to_image
 from backend.preprocessing import run_preprocessing_pipeline
 from backend.detection import detect_document_boundary
 from backend.correction import correct_perspective
@@ -23,7 +24,6 @@ def run_full_verification_pipeline(image) -> dict:
         else:
             img = image.copy()
             
-        from backend.utils import resize_image
         # Normalize size to make processing speeds uniform and reliable
         img = resize_image(img, 1280, 720)
         
@@ -32,13 +32,9 @@ def run_full_verification_pipeline(image) -> dict:
         if not prep_res["success"]:
             raise ValueError("Image preprocessing failed.")
             
-        # Extract preprocessed outputs
-        # Find step base64 image (gray is the standard for detection)
-        # We can convert back base64 grayscale to CV image for subsequent stages
-        from backend.utils import base64_to_image
-        
-        gray_step = next(step for step in prep_res["steps"] if step["name"] == "grayscale")
-        gray_img = base64_to_image(gray_step["image_base64"])
+        # Generate grayscale directly (don't round-trip through base64 which
+        # would decode back as 3-channel BGR and break single-channel operations)
+        gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         
         # --- Stage 2: Document Detection ---
         det_res = detect_document_boundary(img, gray_img)
@@ -47,7 +43,12 @@ def run_full_verification_pipeline(image) -> dict:
         corners = det_res["corners"]
         corr_res = correct_perspective(img, corners)
         
-        corrected_img = base64_to_image(corr_res["corrected_base64"])
+        # Use the raw corrected image directly (avoid lossy JPEG base64 roundtrip)
+        # The base64 in corr_res is for API response/display only
+        corrected_img = corr_res.get("_corrected_image_raw")
+        if corrected_img is None:
+            # Fallback: decode from base64 if raw not available
+            corrected_img = base64_to_image(corr_res["corrected_base64"])
         
         # --- Stage 4 & 5: Feature Extraction & Matching ---
         feat_res = run_feature_matching(corrected_img)
@@ -70,12 +71,15 @@ def run_full_verification_pipeline(image) -> dict:
             ocr_invalidity_score=val_res["ocr_invalidity_score"]
         )
         
+        # Strip internal non-serializable fields before building the response
+        corr_res_clean = {k: v for k, v in corr_res.items() if not k.startswith("_")}
+        
         # Compile complete structured report
         return {
             "success": True,
             "preprocessing": prep_res,
             "document_detection": det_res,
-            "perspective_correction": corr_res,
+            "perspective_correction": corr_res_clean,
             "feature_matching": feat_res,
             "tampering_detection": tamp_res,
             "ocr_extraction": ocr_res,

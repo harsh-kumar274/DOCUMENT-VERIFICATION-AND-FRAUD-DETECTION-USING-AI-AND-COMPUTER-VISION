@@ -44,6 +44,7 @@ def correct_perspective(image: np.ndarray, corners: list) -> dict:
             "phase": "perspective_correction",
             "success": True,
             "corrected_base64": image_to_base64(corrected_img),
+            "_corrected_image_raw": corrected_img,  # raw numpy for downstream (not JSON-serialized)
             "explanation": "Homography transformation calculated via RANSAC. Perspective skew and rotation corrected to standard 856x540 layout."
         }
     except Exception as e:

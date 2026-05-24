@@ -1,5 +1,7 @@
 import os
+import shutil
 import logging
+import platform
 
 # Configure Logging
 logging.basicConfig(
@@ -21,35 +23,53 @@ TEMPLATE_PATH = os.path.join(BASE_DIR, "templates", "PAN_CARD_TEMPLATE.jpeg")
 # If your Tesseract is installed in a non-standard location, add its path
 # to the list below.
 # ---------------------------------------------------------------------------
+# Candidate paths to scan — ordered by platform likelihood.
+# macOS (Homebrew), Linux, then Windows.
 TESSERACT_PATHS = [
+    # macOS (Homebrew)
+    "/opt/homebrew/bin/tesseract",
+    "/usr/local/bin/tesseract",
+    # Linux
+    "/usr/bin/tesseract",
+    "/usr/local/bin/tesseract",
+    # Windows
     r"C:\Program Files\Tesseract-OCR\tesseract.exe",
     r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
     r"D:\Program Files\Tesseract-OCR\tesseract.exe",
     r"C:\tools\Tesseract-OCR\tesseract.exe",
-    r"C:\Users\harsh\AppData\Local\Programs\Tesseract-OCR\tesseract.exe",
 ]
 
-TESSERACT_CMD = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-USE_MOCK_OCR = False
-
-print("Tesseract Path:", TESSERACT_CMD)
-print("Mock OCR:", USE_MOCK_OCR)
-
 # --- Auto-detect Tesseract installation ---
-for path in TESSERACT_PATHS:
-    if os.path.exists(path):
-        TESSERACT_CMD = path
-        USE_MOCK_OCR = False
-        logger.info(f"[Tesseract] Real OCR enabled at: {path}")
-        break
+TESSERACT_CMD = None
+USE_MOCK_OCR = True  # Assume unavailable until found
+
+# Method 1: Try shutil.which() — finds tesseract if it's on the system PATH
+_which_result = shutil.which("tesseract")
+if _which_result:
+    TESSERACT_CMD = _which_result
+    USE_MOCK_OCR = False
+    logger.info(f"[Tesseract] Found via PATH: {TESSERACT_CMD}")
+
+# Method 2: Fall back to scanning known paths
+if USE_MOCK_OCR:
+    for path in TESSERACT_PATHS:
+        if os.path.exists(path):
+            TESSERACT_CMD = path
+            USE_MOCK_OCR = False
+            logger.info(f"[Tesseract] Found at known path: {TESSERACT_CMD}")
+            break
 
 if USE_MOCK_OCR:
     logger.warning(
-        "[Tesseract] OCR binary not found in any known path. "
+        "[Tesseract] OCR binary not found on PATH or in any known path. "
         "Falling back to MOCK mode. "
-        "Install Tesseract from https://github.com/UB-Mannheim/tesseract/wiki "
-        "or add its path to TESSERACT_PATHS in backend/config.py"
+        "Install Tesseract: brew install tesseract (macOS) / "
+        "apt install tesseract-ocr (Linux) / "
+        "https://github.com/UB-Mannheim/tesseract/wiki (Windows). "
+        "Or add its path to TESSERACT_PATHS in backend/config.py"
     )
+else:
+    logger.info(f"[Tesseract] Real OCR enabled: {TESSERACT_CMD} (mock={USE_MOCK_OCR})")
 
 # Preprocessing Settings
 CLAHE_CLIP_LIMIT = 2.0

@@ -80,5 +80,7 @@ tmp/
 *.jpeg
 *.jpg
 *.png
-# Except template if you want to track it
+# Allow tracked images
 !PAN_CARD_TEMPLATE.jpeg
+!assets/
+!assets/**
